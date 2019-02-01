@@ -26,6 +26,7 @@ pipeline {
         buildDiscarder(logRotator(daysToKeepStr: '30', numToKeepStr: '',
                                   artifactDaysToKeepStr: '2',
                                   artifactNumToKeepStr: ''))
+        timestamps()
     }
     agent { label getNodeLabel() }
     stages {
