@@ -12,16 +12,14 @@ hopefully reducing the tendency for them to diverge in subtle ways.
 #### Jenkinsfile
 
 The Pipeline defined in
-`scripts/jenkins/commit_validation/jenkins-jobs/Jenkinsfile` is a Groovy
-translation of `scripts/jenkins/commit_validation/single-project-gerrit` and
-`scripts/jenkins/commit_validation/single-project-clang-static-analyzer`.
+[`Jenkinsfile`](Jenkinsfile) is a Groovy translation of [single-project-gerrit](https://github.com/couchbase/build/blob/master/scripts/jenkins/commit_validation/single-project-gerrit) and
+[single-project-clang-static-analyzer] and (https://github.com/couchbase/build/blob/master/scripts/jenkins/commit_validation/single-project-clang-static-analyzer).
 
 #### Configuration
 
 ##### Shared
 
-The files in
-`scripts/jenkins/commit_validation/jenkins-jobs/config/common/` hold the
+The files in [`config/common`](config/common/) hold the
 environment variables used to configure a given job across _all_ projects.
 These are the equivalent of the EnvInject parameters in the traditional
 Jenkins jobs.
@@ -48,18 +46,18 @@ BAZ=BAR // is valid as BAR has been defined
 
 These files are expected to contain values common to all projects
 (`kv_engine`, `couchstore` etc.) - for example
-`scripts/jenkins/commit_validation/jenkins-jobs/config/common/ASan-UBSan.groovy`
-may contain
+[`config/common/threadsanitizer.groovy`](config/common/threadsanitizer.groovy)
+may contain:
 
 ```
 return {
 ...
-ASAN_OPTIONS="abort_on_error=true disable_coredump=0 use_madv_dontdump=1"
+ENABLE_THREADSANITIZER=1
 ...
 }
 ```
 
-which will be applied when any `ASan-UBSan` job is run - unless overridden in
+which will be applied when any `threadsanitizer` job is run - unless overridden in
 a project specific file.
 
 [Groovy String
@@ -78,10 +76,10 @@ PATH="${PATH}:/usr/lib/llvm-3.9/bin/"
 
 ##### Project Specific
 
-Files in `scripts/jenkins/commit_validation/jenkins-jobs/config/${JOB_NAME}/`
+Files in `jenkins-jobs/config/${JOB_NAME}/`
 can be used to extend or override the values for a specific job. E.g.,
 
-`scripts/jenkins/commit_validation/jenkins-jobs/config/kv_engine/ASan-UBSan.groovy`
+`config/kv_engine/ASan-UBSan.groovy`
 will only be applied to the `ASan-UBSan` job for `kv_engine`, and can contain
 variables specific to that job, e.g.,
 
@@ -116,9 +114,9 @@ The job name corresponds
 to the config file which will be loaded:
 
 `kv_engine.ASan-UBSan` will load
-`scripts/jenkins/commit_validation/jenkins-jobs/config/common/ASan-UBSan.groovy`
+`jenkins-jobs/config/common/ASan-UBSan.groovy`
 and
-`scripts/jenkins/commit_validation/jenkins-jobs/config/kv_engine/ASan-UBSan.groovy`,
+`config/kv_engine/ASan-UBSan.groovy`,
 as will `kv_engine.ASan-UBSan.some_testing_variant`.
 
 Anything after the second `.` will be ignored; each job must have a unique
@@ -137,10 +135,10 @@ It is noted that this is not a neat way of achieving this, but
  - Create a new __Multibranch Pipeline__ Job
  - Set the name as described above
  - Add Branch Source, Git
-     - Project Repository : `https://github.com/couchbase/build.git`
+     - Project Repository : `https://github.com/couchbase/server-cv.git`
  - Build Configuration
     - Script Path:
-      `scripts/jenkins/commit_validation/jenkins-jobs/Jenkinsfile`
+      `jenkins-jobs/Jenkinsfile`
 - Scan Multibranch Pipeline Triggers
     - Periodically if not otherwise run
         - Interval : `1 Hour`
