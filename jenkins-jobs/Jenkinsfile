@@ -139,7 +139,7 @@ pipeline {
 
         stage("Clean"){
             steps {
-                sh 'cd ns_server && git clean -xfdq'
+                sh '(cd ns_server && git clean -xfdq) || true'
                 sh 'rm -fr build install'
 
                 // Zero ccache stats, so we can measure how much space this build is
