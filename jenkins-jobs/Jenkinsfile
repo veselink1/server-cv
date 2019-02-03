@@ -14,8 +14,13 @@ import hudson.Util
 // When true, jobs using this Jenkinsfile will report "informational" votes
 // and will not cause an overall -1 Verification if they fail.
 // This is useful when forking to testing new jobs or changes to the pipeline.
+//
+// By default is true if the job name contains the string "silent". Note
+// That anything after the second '.' in JOB_NAME is otherwise ignored, so
+// you can make a job silent by renaming it something like
+// 'kv_engine.linux.silent'
 
-SILENT = true
+SILENT = env.JOB_NAME.contains("silent")
 
 WINDOWS_NODE_LABEL = "msvc2015"
 LINUX_NODE_LABEL = "ubuntu-1604"
