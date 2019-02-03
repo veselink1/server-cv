@@ -292,7 +292,7 @@ pipeline {
 def getJobType() {
     // e.g., kv_engine.ASan-UBSan.some_testing_change/master
     // we want ASan-UBSan
-    return env.JOB_NAME.tokenize(".")[1]
+    return getJobName().tokenize(".")[1]
 }
 
 def getJobName() {
@@ -304,7 +304,7 @@ def getJobName() {
 def getProjectName() {
     // e.g., kv_engine.ASan-UBSan.some_testing_change/master
     // we want kv_engine
-    return env.JOB_NAME.tokenize(".")[0]
+    return getJobName().tokenize(".")[0]
 }
 
 def getNodeLabel() {
