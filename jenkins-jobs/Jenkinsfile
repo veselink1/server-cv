@@ -279,6 +279,12 @@ pipeline {
             }
             archiveArtifacts(allowEmptyArchive: true,
                              artifacts: 'archived_core_dumps.tar.bz2')
+            cleanWs cleanWhenFailure: false,
+                    cleanWhenNotBuilt: false,
+                    cleanWhenUnstable: false,
+                    notFailBuild: true,
+                    patterns: [[pattern: 'build/**', type: 'INCLUDE'],
+                               [pattern: 'install/**', type: 'INCLUDE']]
         }
         success {
             submitGerritVerifyStatus(1)
