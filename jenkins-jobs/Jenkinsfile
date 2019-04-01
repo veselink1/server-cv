@@ -51,7 +51,7 @@ pipeline {
                     // However this may not currently work on windows
 
                     manifestFile: "${getManifestFileName()}",
-                    manifestGroup: 'build,kv',
+                    manifestGroup: 'build,kv,kv_ee',
                     manifestRepositoryUrl: 'git://github.com/couchbase/manifest.git',
                     quiet: true,
                     resetFirst: false])

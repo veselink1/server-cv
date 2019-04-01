@@ -7,7 +7,8 @@ return {
     // tell it to use the toolchain in /usr/local.
     CMAKE_ARGS="-DCMAKE_BUILD_TYPE=Debug -DCOUCHBASE_KV_COMMIT_VALIDATION=1 " +
                "-DCMAKE_C_COMPILER_EXTERNAL_TOOLCHAIN=/usr/local " +
-               "-DCMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN=/usr/local"
+               "-DCMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN=/usr/local" +
+               " -DBUILD_ENTERPRISE=1"
 
     ENABLE_ADDRESSSANITIZER=1
     ENABLE_UNDEFINEDSANITIZER=1
