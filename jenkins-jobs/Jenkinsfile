@@ -67,7 +67,7 @@ pipeline {
                                           disableStrictForbiddenFileVerification: false,
                                           pattern: getProjectName()]],
                         triggerOnEvents: [patchsetCreated(excludeDrafts: true,
-                                                          excludeNoCodeChange: false,
+                                                          excludeNoCodeChange: true,
                                                           excludeTrivialRebase: false),
                                           draftPublished()])])])
                 }
