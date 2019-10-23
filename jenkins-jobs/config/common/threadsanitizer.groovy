@@ -5,7 +5,7 @@ return {
 // (and not the default GCC 5). As GCC 7 is installed in /usr/local,
 // clang doesn't automatically detect it,so we need to explicitly tell
 // it to use the toolchain in /usr/local.
-CMAKE_ARGS="-DCMAKE_BUILD_TYPE=Debug -DCOUCHBASE_KV_COMMIT_VALIDATION=1" +
+CMAKE_ARGS="-DCMAKE_BUILD_TYPE=Debug " +
            "-DCMAKE_C_COMPILER_EXTERNAL_TOOLCHAIN=/usr/local" +
            "-DCMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN=/usr/local"
 
