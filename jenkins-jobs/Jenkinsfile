@@ -113,6 +113,10 @@ pipeline {
                     // default CMAKE_ARGS to an empty string if unset
                     env.CMAKE_ARGS = env.CMAKE_ARGS ?: ""
 
+                    if (getJobName() != "windows") {
+                        env.CMAKE_ARGS="-DCMAKE_BUILD_TYPE=DebugOptimized ${CMAKE_ARGS}"
+                    }
+
                     if (env.ENABLE_CODE_COVERAGE) {
                        env.CMAKE_ARGS="${CMAKE_ARGS} -DCB_CODE_COVERAGE=ON"
                     }
