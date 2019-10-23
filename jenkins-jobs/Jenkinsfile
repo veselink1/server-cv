@@ -382,7 +382,18 @@ def submitGerritVerifyStatus(value) {
 
         def jobName = getJobName()
         def url = "http://cv.jenkins.couchbase.com/job/${getJobName()}/job/${env.BRANCH_NAME}/${BUILD_NUMBER}/"
-        def duration = "${Util.getTimeSpanString(System.currentTimeMillis() - (env.startTime as Long))}"
+        def startTimeMs
+
+        if (env.startTime != null) {
+            startTimeMs = env.startTime as Long
+        } else {
+            // if something went wrong we might not have stored the start time
+            // use the Jenkins provided value, even though this includes time spent
+            // waiting for a node
+            startTimeMs = currentBuild.startTimeInMillis as Long
+        }
+
+        def duration = "${Util.getTimeSpanString(System.currentTimeMillis() - startTimeMs)}"
 
         sh """ssh -p ${env.GERRIT_PORT} buildbot@${env.GERRIT_HOST} \
         -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" \
