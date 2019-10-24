@@ -110,6 +110,9 @@ pipeline {
 
                     env.CBBUILD_DIR = "${pwd()}/cbbuild"
 
+                    // default CMAKE_ARGS to an empty string if unset
+                    env.CMAKE_ARGS = env.CMAKE_ARGS ?: ""
+
                     if (env.ENABLE_CODE_COVERAGE) {
                        env.CMAKE_ARGS="${CMAKE_ARGS} -DCB_CODE_COVERAGE=ON"
                     }
