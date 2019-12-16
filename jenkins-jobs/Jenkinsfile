@@ -24,7 +24,7 @@ SILENT = env.JOB_NAME.contains("silent")
 
 WINDOWS_NODE_LABEL = "msvc2015"
 LINUX_NODE_LABEL = "ubuntu-1604"
-
+MACOS_NODE_LABEL = "kv-macos"
 
 pipeline {
     options {
@@ -42,6 +42,8 @@ pipeline {
                     // currentBuild.durationString includes time spent
                     // waiting for a node
                     env.startTime = System.currentTimeMillis()
+                    // Print the Job Type to ensure we've selected the correct Job
+                    println('Job Type : ' + getJobType())
                 }
                 checkout([$class: 'RepoScm',
                     currentBranch: true,
@@ -329,7 +331,18 @@ def getProjectName() {
 }
 
 def getNodeLabel() {
-    def osLabel = (getJobName() == "windows" ? WINDOWS_NODE_LABEL : LINUX_NODE_LABEL)
+    def osLabel = ""
+    switch(getJobType()) {
+        case "windows":
+            osLabel = WINDOWS_NODE_LABEL
+            break;
+        case "macos":
+            osLabel = MACOS_NODE_LABEL
+            break;
+        default:
+            osLabel = LINUX_NODE_LABEL
+            break;
+    }
     return "${osLabel} && ${env.BRANCH_NAME}"
 }
 
