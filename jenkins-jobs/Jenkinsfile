@@ -113,7 +113,7 @@ pipeline {
                     // and cause test timeouts.
                     env.TEST_PARALLELISM = env.TEST_PARALLELISM
                         ? env.TEST_PARALLELISM
-                        : (env.PARALLELISM / 2)
+                        : ((env.PARALLELISM as Integer) / 2)
 
                     env.CBBUILD_DIR = "${pwd()}/cbbuild"
 
