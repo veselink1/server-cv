@@ -13,9 +13,4 @@ return {
     ENABLE_UNDEFINEDSANITIZER=1
     UBSAN_OPTIONS="print_stacktrace=1"
     ASAN_OPTIONS="abort_on_error=true disable_coredump=0 use_madv_dontdump=1"
-
-    // 2017-05-26: ubuntu16.04 machines are currently 4 cores with 8GB RAM -
-    // constrain parallelism so we don't swap (too much)...
-    PARALLELISM=6
-    TEST_PARALLELISM=3
 }
