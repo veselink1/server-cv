@@ -102,13 +102,18 @@ pipeline {
                     }
 
                     // Optional env vars - how many jobs to run in parallel by default?
-                    env.PARALLELISM = env.PARALLELISM ? env.PARALLELISM : 8;
+                    env.PARALLELISM = env.PARALLELISM
+                        ? env.PARALLELISM
+                        : Runtime.getRuntime().availableProcessors()
 
-                    // Set default TEST_PARALLELISM to 4 - many of our tests are actually
-                    // multi-threaded (unlike the compiler) and hence running 8 tests in
+                    // Set default TEST_PARALLELISM to half of PARALLELISM -
+                    // many of our tests are actually multi-threaded
+                    //(unlike the compiler) and hence running #CPUs tests in
                     // parallel (each with multiple threads) can overload the CV machines
                     // and cause test timeouts.
-                    env.TEST_PARALLELISM = env.TEST_PARALLELISM ? env.TEST_PARALLELISM : 4;
+                    env.TEST_PARALLELISM = env.TEST_PARALLELISM
+                        ? env.TEST_PARALLELISM
+                        : (env.PARALLELISM / 2)
 
                     env.CBBUILD_DIR = "${pwd()}/cbbuild"
 
