@@ -35,28 +35,8 @@ pipeline {
     }
     agent { label getNodeLabel() }
     stages {
-        stage("Checkout Repo"){
+        stage("Prepare Environment"){
             steps {
-                script {
-                    // Manually tracking run time as
-                    // currentBuild.durationString includes time spent
-                    // waiting for a node
-                    env.startTime = System.currentTimeMillis()
-                    // Print the Job Type to ensure we've selected the correct Job
-                    println('Job Type : ' + getJobType())
-                }
-                checkout([$class: 'RepoScm',
-                    currentBranch: true,
-
-                    // To use multiple jobs in the repo sync (equivalent to -j ) use
-                    // jobs: PARALLELISM,
-                    // However this may not currently work on windows
-
-                    manifestFile: "${getManifestFileName()}",
-                    manifestGroup: 'build,kv,kv_ee',
-                    manifestRepositoryUrl: 'git://github.com/couchbase/manifest.git',
-                    quiet: true,
-                    resetFirst: false])
                 script {
                     // Configure Gerrit Trigger
                     properties([pipelineTriggers([gerrit(silentMode: SILENT,
@@ -73,11 +53,7 @@ pipeline {
                                                           excludeTrivialRebase: false),
                                           draftPublished()])])])
                 }
-            }
-        }
 
-        stage("Prepare Environment"){
-            steps {
                 // look for config files which specify env vars
                 loadEnvFiles()
 
@@ -160,6 +136,34 @@ pipeline {
             }
         }
 
+        stage("Checkout Repo"){
+            steps {
+                script {
+                    // Manually tracking run time as
+                    // currentBuild.durationString includes time spent
+                    // waiting for a node
+                    env.startTime = System.currentTimeMillis()
+                    // Print the Job Type to ensure we've selected the correct Job
+                    println('Job Type : ' + getJobType())
+                }
+                checkout([$class: 'RepoScm',
+                    currentBranch: true,
+
+                    // To use multiple jobs in the repo sync (equivalent to -j ) use
+                    // jobs: PARALLELISM,
+                    // However this may not currently work on windows
+
+                    manifestFile: "${getManifestFileName()}",
+                    manifestGroup: 'build,kv,kv_ee',
+                    manifestRepositoryUrl: 'git://github.com/couchbase/manifest.git',
+                    quiet: true,
+                    resetFirst: false])
+
+                sh '${CBBUILD_DIR}/scripts/jenkins/commit_validation/checkout_dependencies.py ' +
+                   '$GERRIT_PATCHSET_REVISION $GERRIT_CHANGE_ID $GERRIT_PROJECT $GERRIT_REFSPEC'
+            }
+        }
+
         stage("Clean"){
             steps {
                 sh '(cd ns_server && git clean -xfdq) || true'
@@ -171,6 +175,26 @@ pipeline {
 
                 // Wipe out any core files left from a previous run.
                 sh ' rm -f /tmp/core.*'
+
+                script {
+                    if (env.ENABLE_CBDEPS_TESTING) {
+                        sh 'rm -rf ~/.cbdepscache'
+                        sh 'rm -rf build/tlm/deps'
+                    }
+                }
+            }
+        }
+
+        stage("Configure"){
+            when {
+                // Do not run this build stage if this is a static analysis job
+                // - the "Static Analysis" stage will do the required work.
+                expression { getJobType() != 'clang_analyzer' }
+            }
+
+            steps {
+                sh 'mkdir -p build'
+                sh 'cd build && cmake ${CMAKE_ARGS} ..'
             }
         }
 
@@ -181,20 +205,10 @@ pipeline {
                 expression { getJobType() != 'clang_analyzer' }
             }
             steps {
-                sh '${CBBUILD_DIR}/scripts/jenkins/commit_validation/checkout_dependencies.py ' +
-                '$GERRIT_PATCHSET_REVISION $GERRIT_CHANGE_ID $GERRIT_PROJECT $GERRIT_REFSPEC'
-                script {
-                    if (env.ENABLE_CBDEPS_TESTING) {
-                       sh 'rm -rf ~/.cbdepscache'
-                       sh 'rm -rf build/tlm/deps'
-                    }
-                }
-
-                sh 'make -j${PARALLELISM} EXTRA_CMAKE_OPTIONS="${CMAKE_ARGS}"'
+                sh 'cmake --build build --parallel ${PARALLELISM} --target install'
                 sh 'ccache -s'
             }
         }
-
 
         stage("Test"){
             when {
