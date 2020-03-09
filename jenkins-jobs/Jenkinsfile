@@ -226,7 +226,7 @@ pipeline {
                             // -j${TEST_PARALLELISM} : Run tests in parallel.
                             // -T Test   : Generate XML output file of test results.
                             sh 'ctest -j${TEST_PARALLELISM} --output-on-failure \
-                                --no-compress-output -T Test --exclude-regex \\"${TESTS_EXCLUDE}\\"'
+                                --no-compress-output -T Test --exclude-regex ${TESTS_EXCLUDE}'
 
                             // Generate code coverage report in XML format for Jenkins plugin.
                             if (env.ENABLE_CODE_COVERAGE) {
