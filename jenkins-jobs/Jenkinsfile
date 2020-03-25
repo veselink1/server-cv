@@ -120,6 +120,9 @@ pipeline {
                        env.CMAKE_ARGS="${CMAKE_ARGS} -DCB_DOWNLOAD_DEPS_REPO="+
                        "http://latestbuilds.service.couchbase.com/builds/releases/cbdeps"
                     }
+
+                    env.CMAKE_GENERATOR = env.CMAKE_GENERATOR ? env.CMAKE_GENERATOR : "Ninja"
+
                     if (env.GERRIT_PROJECT == "ns_server") {
                         env.BUILD_DIR="${GERRIT_PROJECT}/build"
                     }
@@ -194,7 +197,7 @@ pipeline {
 
             steps {
                 sh 'mkdir -p build'
-                sh 'cd build && cmake ${CMAKE_ARGS} ..'
+                sh 'cd build && cmake -G ${CMAKE_GENERATOR} ${CMAKE_ARGS} ..'
             }
         }
 
