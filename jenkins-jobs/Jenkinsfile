@@ -380,7 +380,7 @@ def reportWarnings() {
              categoriesPattern: '', consoleParsers: [[parserName: parser]],
              defaultEncoding: '', excludePattern: '',
              failedTotalAll: failedTotal, healthy: '',
-             includePattern: '.*[/\\\\]kv_engine[/\\\\].*',
+             includePattern: '.*[/\\\\]' + getProjectName() + '[/\\\\].*',
              messagesPattern: '', unHealthy: '')
 }
 
