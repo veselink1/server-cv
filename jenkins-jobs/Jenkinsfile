@@ -170,7 +170,7 @@ pipeline {
         stage("Clean"){
             steps {
                 sh '(cd ns_server && git clean -xfdq) || true'
-                sh 'rm -fr build install'
+                sh 'cmake --build build --target clean || true'
 
                 // Zero ccache stats, so we can measure how much space this build is
                 // consuming.
@@ -319,7 +319,8 @@ pipeline {
                     cleanWhenUnstable: false,
                     notFailBuild: true,
                     patterns: [[pattern: 'build/**', type: 'INCLUDE'],
-                               [pattern: 'install/**', type: 'INCLUDE']]
+                               [pattern: 'install/**', type: 'INCLUDE'],
+                               [pattern: '**/CTestCostData.txt', type: 'EXCLUDE']]
         }
         success {
             submitGerritVerifyStatus(1)
