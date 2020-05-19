@@ -50,8 +50,10 @@ pipeline {
                                           pattern: getProjectName()]],
                         triggerOnEvents: [patchsetCreated(excludeDrafts: true,
                                                           excludeNoCodeChange: true,
-                                                          excludeTrivialRebase: false),
-                                          draftPublished()])])])
+                                                          excludeTrivialRebase: false,
+                                                          excludeWipState: true),
+                                          draftPublished(),
+                                          wipStateChanged()])])])
                 }
 
                 // look for config files which specify env vars
