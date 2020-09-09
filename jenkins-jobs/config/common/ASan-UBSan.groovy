@@ -1,13 +1,12 @@
 return {
-    // 2018-02-01: cbdeps are now compiled with GCC 7
-    // (see https://issues.couchbase.com/browse/CBD-2151).
-    // We therefore need to ensure that clang uses GCC7's libstdc++
-    // (and not the default GCC 5). As GCC 7 is installed in /usr/local,
-    // clang doesn't automatically detect it, so we need to explicitly
-    // tell it to use the toolchain in /usr/local.
-    CMAKE_ARGS="-DCMAKE_C_COMPILER_EXTERNAL_TOOLCHAIN=/usr/local " +
-               "-DCMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN=/usr/local" +
-               " -DBUILD_ENTERPRISE=1"
+    CC="clang-9"
+    CXX="clang++-9"
+    // Add llvm-9's bin dir to path, so `llvm-symbolizer' can be found (we
+    // cannot use the versioned suffix one - llvm-symbolizer-9' - as the
+    // binary must be named 'llvm-symbolizer').
+    PATH="${PATH}" + ":/usr/lib/llvm-9/bin/"
+
+    CMAKE_ARGS="-DBUILD_ENTERPRISE=1"
 
     ENABLE_ADDRESSSANITIZER=1
     ENABLE_UNDEFINEDSANITIZER=1
