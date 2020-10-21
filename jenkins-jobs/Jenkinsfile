@@ -23,7 +23,7 @@ import hudson.Util
 SILENT = env.JOB_NAME.contains("silent")
 
 WINDOWS_NODE_LABEL = "msvc2015"
-LINUX_NODE_LABEL = "ubuntu-1604"
+LINUX_NODE_LABEL = "ubuntu-18.04"
 MACOS_NODE_LABEL = "kv-macos"
 
 pipeline {
