@@ -250,12 +250,6 @@ pipeline {
                     if (env.RUN_SIMPLE_TEST) {
                         sh 'make -C testrunner simple-test VERBOSE=1'
                     }
-                    // Check for core files - if present then archive them and the
-                    // executable they are from (for post-mortem) and fail the build.
-                    sh '''exec /bin/bash
-                    shopt -s nullglob
-                    ${CBBUILD_DIR}/scripts/jenkins/commit_validation/archive_core_files.sh archived_core_dumps /tmp/core.*
-                    rm -f /tmp/core.*'''
                 }
             }
         }
@@ -313,6 +307,18 @@ pipeline {
                                         pattern: "build/${getProjectName()}/Testing/**/Test.xml",
                                         skipNoTestFiles: false,
                                         stopProcessingIfError: true)])
+                }
+                // Check for core files - if present then archive them and the
+                // executable they are from (for post-mortem) and fail the build.
+                def statusCode = sh (returnStatus:true, 
+                    script:'''#! /bin/bash -x
+                    shopt -s nullglob
+                    ${CBBUILD_DIR}/scripts/jenkins/commit_validation/archive_core_files.sh archived_core_dumps /tmp/core.*
+                    rm -f /tmp/core.*''')
+
+                if (statusCode != 0) {
+                    // fail the build if core files were found
+                    currentBuild.result = 'FAILURE'
                 }
             }
             archiveArtifacts(allowEmptyArchive: true,
