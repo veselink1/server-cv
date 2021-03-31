@@ -199,6 +199,10 @@ pipeline {
             }
 
             steps {
+                // If we've checked out a specific version of the tlm project
+                // then we'll need to bring our new CMakeLists.txt in manually
+                sh 'cp -f tlm/CMakeLists.txt CMakeLists.txt'
+                sh 'cp -f tlm/third-party-CMakeLists.txt third_party/CMakeLists.txt'
                 sh 'mkdir -p build'
                 sh 'cd build && cmake -G ${CMAKE_GENERATOR} ${CMAKE_ARGS} ..'
             }
