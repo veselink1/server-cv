@@ -122,6 +122,15 @@ pipeline {
                        env.CMAKE_ARGS="${CMAKE_ARGS} -DCB_DOWNLOAD_DEPS_REPO="+
                        "http://latestbuilds.service.couchbase.com/builds/releases/cbdeps"
                     }
+                    // Constrain link parallelism to half of the compile
+                    // parallelism given that linking is typically much more RAM
+                    // hungry than compilation, and we have seen the build get
+                    // OOM-killed on machines which have many cores but lower
+                    // RAM (e.g. 16 cores, 16 GB RAM).
+                    if (env.PARALLELISM) {
+                       link_parallelism = ((env.PARALLELISM as Integer) / 2)
+                       env.CMAKE_ARGS="${CMAKE_ARGS} -DCB_PARALLEL_LINK_JOBS=${link_parallelism}"
+                    }
 
                     env.CMAKE_GENERATOR = env.CMAKE_GENERATOR ? env.CMAKE_GENERATOR : "Ninja"
 
