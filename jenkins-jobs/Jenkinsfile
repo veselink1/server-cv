@@ -229,7 +229,7 @@ pipeline {
                 expression { getJobType() != 'clang_analyzer' }
             }
             steps {
-                sh 'cmake --build build --parallel ${PARALLELISM} --target install'
+                sh 'cmake --build build --parallel ${PARALLELISM} --target everything --target install'
                 sh 'ccache -s'
             }
         }
