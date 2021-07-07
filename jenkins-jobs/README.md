@@ -86,13 +86,13 @@ variables specific to that job, e.g.,
 ```
 return {
 ...
-TESTS_EXCLUDE="memcached-breakpad-test-segfault|...|ep-engine-persistence-unit-tests.rocksdb"
+CTEST_ARGS="--exclude-regex memcached-breakpad-test-segfault|...|ep-engine-persistence-unit-tests.rocksdb"
 PATH="${PATH}:/path/to/something/"
 ...
 }
 ```
 
-This would override `TESTS_EXCLUDE` (if it were set in a `common` config) and
+This would override `CTEST_ARGS` (if it were set in a `common` config) and
 append to the end of `PATH` (not overriding what was set in the `common`
 config).
 

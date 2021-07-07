@@ -1,4 +1,4 @@
 return {
-TESTS_EXCLUDE="purge|rewind|changecount"
+CTEST_ARGS="--exclude-regex purge|rewind|changecount"
 WARNING_THRESHOLD=1
 }

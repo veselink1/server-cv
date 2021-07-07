@@ -1,4 +1,4 @@
 return {
 CMAKE_GENERATOR="Ninja"
-TESTS_EXCLUDE="memcached-spdlogger-test|memcached_testapp.*.TransportProtocols/GetSetSnappyOnOffTest"
+CTEST_ARGS="--exclude-regex memcached-spdlogger-test|memcached_testapp.*.TransportProtocols/GetSetSnappyOnOffTest"
 }

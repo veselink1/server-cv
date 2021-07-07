@@ -4,5 +4,5 @@ return {
     //   ASan runtime does not come first in initial library list; you should
     //   either link runtime to your application or manually preload it with
     //   LD_PRELOAD.
-    TESTS_EXCLUDE="couchstore-purge|couchstore-rewind|couchstore-changecount"
+    CTEST_ARGS="--exclude-regex couchstore-purge|couchstore-rewind|couchstore-changecount"
 }

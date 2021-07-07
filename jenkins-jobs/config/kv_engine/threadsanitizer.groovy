@@ -4,7 +4,7 @@ CMAKE_ARGS="${CMAKE_ARGS} " +
 
 // MB-25989: Disabling rocksdb tests while they are not stable.
 // Exclude breakpad tests as TSan doesn't like us crashing memcached...
-TESTS_EXCLUDE="ep_testsuite_basic.full_eviction.rocksdb|" +
+CTEST_ARGS="--exclude-regex ep_testsuite_basic.full_eviction.rocksdb|" +
 "ep_testsuite_basic.value_eviction.rocksdb|" +
 "ep_testsuite.value_eviction.rocksdb|" +
 "ep_testsuite.full_eviction.rocksdb|" +
