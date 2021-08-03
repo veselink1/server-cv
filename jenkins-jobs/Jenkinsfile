@@ -173,8 +173,12 @@ pipeline {
                     quiet: true,
                     resetFirst: false])
 
-                sh '${CBBUILD_DIR}/scripts/jenkins/commit_validation/checkout_dependencies.py ' +
-                   '$GERRIT_PATCHSET_REVISION $GERRIT_CHANGE_ID $GERRIT_PROJECT $GERRIT_REFSPEC'
+                script {
+                    def response = httpRequest url: getPatchViaGerritURL(), responseHandle: 'NONE', outputFile: 'patch_via_gerrit'
+                }
+
+                sh 'chmod u+x patch_via_gerrit'
+                sh './patch_via_gerrit -c ${HOME}/.ssh/patch_via_gerrit.ini -g $GERRIT_CHANGE_ID -s $WORKSPACE -C'
             }
         }
 
@@ -411,6 +415,20 @@ def getNodeLabel() {
             break;
     }
     return "${osLabel} && ${env.BRANCH_NAME}"
+}
+
+def getPatchViaGerritURL() {
+    def base = "https://packages.couchbase.com/patch_via_gerrit/patch_via_gerrit-"
+    switch(getJobType()) {
+        case "windows":
+            return base + "windows.exe"
+        case "macos":
+            return base + "darwin"
+        case "aarch64-linux":
+            return base + "linux-aarch64"
+        default:
+            return base + "linux-x86_64"
+    }
 }
 
 def getManifestFileName() {
