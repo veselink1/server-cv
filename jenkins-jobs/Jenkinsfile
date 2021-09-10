@@ -99,9 +99,6 @@ pipeline {
                     // default CMAKE_ARGS to an empty string if unset
                     env.CMAKE_ARGS = env.CMAKE_ARGS ?: ""
 
-                    // set commit validation flag unconditionally
-                    env.CMAKE_ARGS="-DCOUCHBASE_KV_COMMIT_VALIDATION=1 ${CMAKE_ARGS}"
-
                     if (getJobName() != "windows") {
                         env.CMAKE_ARGS="-DCMAKE_BUILD_TYPE=DebugOptimized ${CMAKE_ARGS}"
                     }
@@ -505,16 +502,19 @@ def submitGerritVerifyStatus(value) {
 /**
  * Read environment config files 
  *
- * Loads environment variables defined in jenkins-jobs/config/*.groovy files into the environment
- * passed to shell steps.
+ * Loads environment variables defined in jenkins-jobs/config/*.groovy files
+ * into the environment passed to shell steps.
  */
 def loadEnvFiles() {
     def jobName = getJobType()
-    // load env vars from groovy files in the config dir
-    // load common config first, then load overrides from the project specific directory
-    def base = "jenkins-jobs/config/common/${jobName}.groovy"
-    def overrides = "jenkins-jobs/config/${getProjectName()}/${jobName}.groovy"
-    for (fileName in [base, overrides]) {
+    // load env vars from groovy files in the config dir, in the order:
+    // 1. job-common config (e.g. config for all ASan jobs)
+    // 2. project-common config (e.g. config for all kv_engine jobs)
+    // 3. job and project speific (e.g. config for ASan-kv_engine)
+    def common_job = "jenkins-jobs/config/common/${jobName}.groovy"
+    def common_project = "jenkins-jobs/config/${getProjectName()}/common.groovy"
+    def project_specific = "jenkins-jobs/config/${getProjectName()}/${jobName}.groovy"
+    for (fileName in [common_job, common_project, project_specific]) {
         echo "Checking for config file ${fileName}"
         if (fileExists(fileName)) {
             def closure = load fileName
@@ -523,8 +523,6 @@ def loadEnvFiles() {
         }
     }
 }
-
-
 
 /**
  * Execute a closure with delegate set to `env` 
