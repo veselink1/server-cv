@@ -244,7 +244,7 @@ pipeline {
             }
             steps {
                 script {
-                    if (env.GOPROJECT || fileExists("${BUILD_DIR}/CTestTestfile.cmake")) {
+                    if (shouldRunUnitTests()) {
                         dir(env.BUILD_DIR) {
                             if (env.ENABLE_CODE_COVERAGE) {
                                 // Reset code coverage counters (note optional hence the || true).
@@ -320,7 +320,7 @@ pipeline {
     post {
         always {
             script {
-                if (getJobType() != 'clang_analyzer') {
+                if (shouldRunUnitTests()) {
                     xunit(testTimeMargin: '3000', thresholdMode: 1,
                           thresholds: [failed(failureThreshold: '0'),
                                        skipped(failureThreshold: '0')],
@@ -446,6 +446,26 @@ def getManifestGroup() {
     } else {
         return 'build,kv,kv_ee'
     }
+}
+
+/**
+ * Should unit tests be run (and results reported)?
+ * Skip for clang-analyzer (all work is performed at compile time),
+ * otherwise run if unit tests are defined for this project.
+ *
+ * Note that we deliberately don't run unit tests for "tlm" project - while
+ * this is logically the top-level build and compiles everything, we don't
+ * want to run unit tests for all projects as:
+ *   a) that would take a long time for a CV job
+ *   b) it would be testing other projects which may not have stable unit
+ *      tests.
+ * As such we take advantage of the fact that the tlm 'project' directory
+ * doesn't have any ctest tests defined ("${BUILD_DIR}/CTestTestfile.cmake
+ * doesn't exist) to skip here.
+ */
+def shouldRunUnitTests() {
+    return (getJobType() != 'clang_analyzer') &&
+        (env.GOPROJECT || fileExists("${BUILD_DIR}/CTestTestfile.cmake"))
 }
 
 /**
