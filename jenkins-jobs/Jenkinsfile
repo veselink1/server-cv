@@ -165,7 +165,7 @@ pipeline {
                     // However this may not currently work on windows
 
                     manifestFile: "${getManifestFileName()}",
-                    manifestGroup: 'build,kv,kv_ee',
+                    manifestGroup: getManifestGroup(),
                     manifestRepositoryUrl: 'git://github.com/couchbase/manifest.git',
                     quiet: true,
                     resetFirst: false])
@@ -433,6 +433,18 @@ def getManifestFileName() {
         return 'branch-master.xml'
     } else {
         return "couchbase-server/${env.BRANCH_NAME}.xml"
+    }
+}
+
+def getManifestGroup() {
+    // For projects part of kv_engine (kv_engine, platform, couchstore, ...)
+    // we don't want to checkout _all_ repos as that is unnecessary. However
+    // we also support CV for tlm here where we want to build as EE and
+    // hence need 'enterprise' repos.
+    if (env.GERRIT_PROJECT == "tlm") {
+        return 'default,build,enterprise'
+    } else {
+        return 'build,kv,kv_ee'
     }
 }
 
