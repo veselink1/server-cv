@@ -334,6 +334,8 @@ pipeline {
                 recordIssues(enabledForFailure: true,
                              tools: [groovyScript(parserId: 'AddressSanitizer',
                                                   pattern: '**/sanitizers.log.*'),
+                                     groovyScript(parserId: 'LeakSanitizer',
+                                                  pattern: '**/sanitizers.log.*'),
                                      groovyScript(parserId: 'UndefinedBehaviourSanitizer',
                                                   pattern: '**/sanitizers.log.*')],
                              qualityGates: [[threshold: 1,
