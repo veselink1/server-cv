@@ -166,8 +166,12 @@ pipeline {
 
                     manifestFile: "${getManifestFileName()}",
                     manifestGroup: getManifestGroup(),
-                    manifestRepositoryUrl: 'git://github.com/couchbase/manifest.git',
+                    manifestRepositoryUrl: 'https://github.com/couchbase/manifest.git',
                     quiet: true,
+                    // GitHub has disabled raw git:// protocol which is the
+                    // default for repo to perform it's auto-update check.
+                    // Override to use https:
+                    repoUrl: 'https://github.com/couchbasedeps/git-repo',
                     resetFirst: false])
 
                 script {
