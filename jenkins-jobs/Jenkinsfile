@@ -348,7 +348,7 @@ pipeline {
 
                 // Check for core files - if present then archive them and the
                 // executable they are from (for post-mortem) and fail the build.
-                def statusCode = sh (returnStatus:true, 
+                def statusCode = sh (returnStatus:true,
                     script:'''#! /bin/bash -x
                     shopt -s nullglob
                     ${CBBUILD_DIR}/scripts/jenkins/commit_validation/archive_core_files.sh archived_core_dumps /tmp/core.*
@@ -365,8 +365,9 @@ pipeline {
                     cleanWhenNotBuilt: false,
                     cleanWhenUnstable: false,
                     notFailBuild: true,
-                    patterns: [[pattern: 'build/**', type: 'INCLUDE'],
-                               [pattern: 'install/**', type: 'INCLUDE'],
+                    deleteDirs: true,
+                    patterns: [[pattern: 'build', type: 'INCLUDE'],
+                               [pattern: 'install', type: 'INCLUDE'],
                                [pattern: '**/CTestCostData.txt', type: 'EXCLUDE']]
         }
         success {
@@ -538,7 +539,7 @@ def submitGerritVerifyStatus(value) {
 
 
 /**
- * Read environment config files 
+ * Read environment config files
  *
  * Loads environment variables defined in jenkins-jobs/config/*.groovy files
  * into the environment passed to shell steps.
@@ -563,7 +564,7 @@ def loadEnvFiles() {
 }
 
 /**
- * Execute a closure with delegate set to `env` 
+ * Execute a closure with delegate set to `env`
  *
  * Helper method - used to execute closures defined in config files
  * to add all defined variables to the `env` global.
