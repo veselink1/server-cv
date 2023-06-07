@@ -412,7 +412,7 @@ def getNodeLabel() {
             osLabel = MACOS_NODE_LABEL
             break;
         case ~/aarch64-linux.*/:
-            osLabel = "aarch64 && amzn2"
+            osLabel = "aarch64 && linux"
             break;
         default:
             osLabel = LINUX_NODE_LABEL
