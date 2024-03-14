@@ -1,7 +1,4 @@
 return {
-CMAKE_ARGS="${CMAKE_ARGS} " +
-           "-DPHOSPHOR_DISABLE=ON"
-
 // Disable Unity build on this job (the fastest job which compiles EE code) so
 // we have coverage of non-unity in CV, to flag any non-unity specific issues
 // like missing header #includes.
