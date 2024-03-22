@@ -166,3 +166,8 @@ Now` on the job page.
     - This may be useful when testing new jobs running this Jenkinsfile from a
       forked repo e.g., if the new job isn't working quite right while testing
       it won't cause every patch to receive a -1 Verification.
+
+- Check an existing server-cv branch history in-case there's customisation
+  required. E.g. when setting up kv_engine/7.2.4 some customisation of
+  server-cv/7.2.4 was needed, the commit history of server-cv/7.2.4 shows the
+  changes that may need to be ported for any other numbered release.
