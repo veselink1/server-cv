@@ -424,7 +424,8 @@ def getPatchViaGerritURL() {
         case "windows":
             return base + "windows.exe"
         case "macos":
-            return base + "darwin"
+            def arch = sh(script: 'uname -m', returnStdout: true).trim()
+            return base + "darwin-" + arch
         case "aarch64-linux":
             return base + "linux-aarch64"
         default:
