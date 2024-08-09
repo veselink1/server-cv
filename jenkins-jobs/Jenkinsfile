@@ -185,7 +185,7 @@ pipeline {
 
         stage("Clean"){
             steps {
-                sh '(cd ns_server && git clean -xfdq) || true'
+                sh '(cd ns_server && git clean -xffdq) || true'
                 sh 'cmake --build build --target clean || true'
                 // Remove CMake's cache and previously generated
                 // CMakeFiles (detected compiler, generator etc).
