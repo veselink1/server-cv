@@ -42,7 +42,7 @@ pipeline {
                     properties([pipelineTriggers([gerrit(silentMode: SILENT,
                         customUrl: '',
                         serverName: 'review.couchbase.org',
-                        silentStartMode: true,
+                        silentStartMode: false,
                         gerritProjects: [[branches: [[compareType: 'PLAIN',
                                                       pattern: env.BRANCH_NAME]],
                                           compareType: 'PLAIN',
@@ -371,12 +371,6 @@ pipeline {
                                [pattern: 'install', type: 'INCLUDE'],
                                [pattern: '**/CTestCostData.txt', type: 'EXCLUDE']]
         }
-        success {
-            submitGerritVerifyStatus(1)
-        }
-        failure {
-            submitGerritVerifyStatus(-1)
-        }
     }
 }
 
@@ -496,45 +490,6 @@ def reportWarnings() {
              includePattern: '.*[/\\\\]' + getProjectName() + '[/\\\\].*',
              messagesPattern: '', unHealthy: '')
 }
-
-/**
- * Report vote to Gerrit verify-status plugin.
- *
- * Adds the job result to the verify-status sidebar in the Gerrit patch
- * view. This is hacky - the Jenkins plugin that does this for normal jobs
- * does not appear to have been updated to be used from Pipelines.
- * If a way of using the proper plugin is found, or it is updated, it should
- * definitely replace this.
- */
-def submitGerritVerifyStatus(value) {
-    if (env.GERRIT_PATCHSET_REVISION != null) {
-        // Directly report the verify status to Gerrit
-        // The jenkins plugin which reports to the verify-status sidebar does not seem to be up to date
-        // TODO: Investigate the HTTP API for greater portability (e.g., windows!)
-
-        def jobName = getJobName()
-        def url = "http://cv.jenkins.couchbase.com/job/${getJobName()}/job/${env.BRANCH_NAME}/${BUILD_NUMBER}/"
-        def startTimeMs
-
-        if (env.startTime != null) {
-            startTimeMs = env.startTime as Long
-        } else {
-            // if something went wrong we might not have stored the start time
-            // use the Jenkins provided value, even though this includes time spent
-            // waiting for a node
-            startTimeMs = currentBuild.startTimeInMillis as Long
-        }
-
-        def duration = "${Util.getTimeSpanString(System.currentTimeMillis() - startTimeMs)}"
-
-        sh """ssh -p ${env.GERRIT_PORT} buildbot@${env.GERRIT_HOST} \
-        -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" \
-        verify-status save --verification \
-        "'name=${jobName}|value=${value}|url=${url}|abstain=${SILENT}|reporter=buildbot|duration=${duration}'" \
-        ${GERRIT_PATCHSET_REVISION}"""
-    }
-}
-
 
 /**
  * Read environment config files
