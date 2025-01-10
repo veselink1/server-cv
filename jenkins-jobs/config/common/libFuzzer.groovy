@@ -1,9 +1,9 @@
 return {
-    CC="clang-15"
-    CXX="clang++-15"
+    CC="clang-18"
+    CXX="clang++-18"
     CFLAGS="--gcc-toolchain=/opt/gcc-13.2.0 -Wl,-rpath,/opt/gcc-13.2.0/lib64"
     CXXFLAGS="--gcc-toolchain=/opt/gcc-13.2.0 -Wl,-rpath,/opt/gcc-13.2.0/lib64"
-    PATH="/opt/clang-15.0.7/bin:" + "${PATH}"
+    PATH="/opt/clang-18.1.8/bin:/opt/gcc-13.2.0/bin:" + "${PATH}"
     CMAKE_ARGS="-DBUILD_ENTERPRISE=1"
 
     // Setup libFuzzer - enable it, enable ASAN & UBSan; also need to disable
