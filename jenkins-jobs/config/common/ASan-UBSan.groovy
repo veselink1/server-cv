@@ -1,9 +1,9 @@
 return {
-    CC="clang-18"
-    CXX="clang++-18"
+    CC="clang-15"
+    CXX="clang++-15"
     CFLAGS="--gcc-toolchain=/opt/gcc-13.2.0 -Wl,-rpath,/opt/gcc-13.2.0/lib64"
     CXXFLAGS="--gcc-toolchain=/opt/gcc-13.2.0 -Wl,-rpath,/opt/gcc-13.2.0/lib64"
-    PATH="/opt/clang-18.1.8/bin:" + "${PATH}"
+    PATH="/opt/clang-15.0.7/bin:" + "${PATH}"
     CMAKE_ARGS="-DBUILD_ENTERPRISE=1"
     ENABLE_ADDRESSSANITIZER=1
     ENABLE_UNDEFINEDSANITIZER=1
