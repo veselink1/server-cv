@@ -348,9 +348,17 @@ pipeline {
 
                 // Check for core files - if present then archive them and the
                 // executable they are from (for post-mortem) and fail the build.
-                def statusCode = sh (returnStatus:true,
-                    script:'''#! /bin/bash -x
+                def statusCode = sh (returnStatus:true, script:'''#! /bin/bash -x
                     shopt -s nullglob
+
+                    if [ -f /proc/sys/kernel/core_pattern ]; then
+                        echo "Core dump pattern (within /tmp/):"
+                        cat /proc/sys/kernel/core_pattern
+                        echo "Core dump files:"
+                        ls -l /tmp/core.*
+                    fi
+
+                    echo "Processing and archiving core dumps (/tmp/core.*):"
                     ${CBBUILD_DIR}/scripts/jenkins/commit_validation/archive_core_files.sh archived_core_dumps /tmp/core.*
                     rm -f /tmp/core.*''')
 
