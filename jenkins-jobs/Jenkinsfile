@@ -38,44 +38,59 @@ pipeline {
         stage("Prepare Environment"){
             steps {
                 script {
-                    // Configure Gerrit Trigger
-                    properties([pipelineTriggers([gerrit(silentMode: SILENT,
-                        customUrl: '',
-                        serverName: 'review.couchbase.org',
-                        silentStartMode: false,
-                        gerritProjects: [[branches: [[compareType: 'PLAIN',
-                                                      pattern: env.BRANCH_NAME]],
-                                          compareType: 'PLAIN',
-                                          disableStrictForbiddenFileVerification: false,
-                                          pattern: getProjectName()]],
-                        triggerOnEvents: [patchsetCreated(excludeDrafts: true,
-                                                          excludeNoCodeChange: true,
-                                                          excludeTrivialRebase: false,
-                                                          excludeWipState: true),
-                                          draftPublished(),
-                                          wipStateChanged()])])])
+                    // look for config files which specify env vars
+                    loadEnvFiles()
+
+                    // Configure triggers based on loaded environment variables
+                    def triggers = []
+
+                    // Check if this is a scheduled job
+                    if (env.CRON_SCHEDULE) {
+                        echo "Setting up cron trigger with schedule: ${env.CRON_SCHEDULE}"
+                        triggers.add(cron(env.CRON_SCHEDULE))
+                    } else {
+                        echo "Setting up Gerrit trigger"
+                        env.GERRIT_TRIGGER = true
+                        // Configure Gerrit Trigger
+                        triggers.add(gerrit(silentMode: SILENT,
+                            customUrl: '',
+                            serverName: 'review.couchbase.org',
+                            silentStartMode: false,
+                            gerritProjects: [[branches: [[compareType: 'PLAIN',
+                                                          pattern: env.BRANCH_NAME]],
+                                              compareType: 'PLAIN',
+                                              disableStrictForbiddenFileVerification: false,
+                                              pattern: getProjectName()]],
+                            triggerOnEvents: [patchsetCreated(excludeDrafts: true,
+                                                              excludeNoCodeChange: true,
+                                                              excludeTrivialRebase: false,
+                                                              excludeWipState: true),
+                                              draftPublished(),
+                                              wipStateChanged()]))
+                    }
+
+                    properties([pipelineTriggers(triggers)])
                 }
 
-                // look for config files which specify env vars
-                loadEnvFiles()
-
-                // Common script run by various Jenkins commit-validation builds.
-                //
-                // Checks out all the gerrit changes with change-ids matching
-                // $GERRIT_PATCHSET_REVISION in an appropriate branch for the current
-                // manifest from Gerrit server GERRIT_HOST:GERRIT_PORT, compiles and then
-                // runs unit tests for GERRIT_PROJECT (if applicable).
                 script {
-                    requiredEnvVars = ['GERRIT_HOST',
-                                       'GERRIT_PORT',
-                                       'GERRIT_PROJECT',
-                                       'GERRIT_PATCHSET_REVISION',
-                                       'GERRIT_REFSPEC',
-                                       'GERRIT_CHANGE_ID']
+                    // If GERRIT_PROJECT is not set, use the project name from the job.
+                    if (!env.GERRIT_PROJECT) {
+                        env.GERRIT_PROJECT = getProjectName()
+                    }
 
-                    for (var in requiredEnvVars) {
-                        if (!env.getProperty(var)){
-                            error "Required environment variable '${var}' not set."
+                    if (env.GERRIT_TRIGGER) {
+                        // Common variables used by various Jenkins commit-validation builds.
+                        requiredEnvVars = ['GERRIT_HOST',
+                                           'GERRIT_PORT',
+                                           'GERRIT_PROJECT',
+                                           'GERRIT_PATCHSET_REVISION',
+                                           'GERRIT_REFSPEC',
+                                           'GERRIT_CHANGE_ID']
+
+                        for (var in requiredEnvVars) {
+                            if (!env.getProperty(var)){
+                                error "Required environment variable '${var}' not set."
+                            }
                         }
                     }
 
@@ -99,12 +114,15 @@ pipeline {
                     // default CMAKE_ARGS to an empty string if unset
                     env.CMAKE_ARGS = env.CMAKE_ARGS ?: ""
 
-                    if (getJobName() != "windows") {
+                    if (getJobName() != "windows" && !env.CMAKE_ARGS.contains("CMAKE_BUILD_TYPE")) {
                         env.CMAKE_ARGS="-DCMAKE_BUILD_TYPE=DebugOptimized ${CMAKE_ARGS}"
                     }
 
                     if (env.ENABLE_CODE_COVERAGE) {
                        env.CMAKE_ARGS="${CMAKE_ARGS} -DCB_CODE_COVERAGE=ON"
+                       if (!env.CMAKE_ARGS.contains("CMAKE_BUILD_TYPE")) {
+                           env.CMAKE_ARGS="${CMAKE_ARGS} -DCMAKE_BUILD_TYPE=Debug"
+                       }
                     }
                     if (env.ENABLE_THREADSANITIZER) {
                        env.CMAKE_ARGS="${CMAKE_ARGS} -DCB_THREADSANITIZER=ON"
@@ -175,11 +193,17 @@ pipeline {
                     resetFirst: false])
 
                 script {
-                    def response = httpRequest url: getPatchViaGerritURL(), responseHandle: 'NONE', outputFile: 'patch_via_gerrit'
-                }
+                    if (env.GERRIT_TRIGGER) {
+                        // Checks out all the gerrit changes with change-ids matching
+                        // $GERRIT_PATCHSET_REVISION in an appropriate branch for the current
+                        // manifest from Gerrit server GERRIT_HOST:GERRIT_PORT, compiles and then
+                        // runs unit tests for GERRIT_PROJECT (if applicable).
+                        def response = httpRequest url: getPatchViaGerritURL(), responseHandle: 'NONE', outputFile: 'patch_via_gerrit'
 
-                sh 'chmod u+x patch_via_gerrit'
-                sh './patch_via_gerrit -c ${HOME}/.ssh/patch_via_gerrit.ini -g $GERRIT_CHANGE_ID -s $WORKSPACE -C'
+                        sh 'chmod u+x patch_via_gerrit'
+                        sh './patch_via_gerrit -c ${HOME}/.ssh/patch_via_gerrit.ini -g $GERRIT_CHANGE_ID -s $WORKSPACE -C'
+                    }
+                }
             }
         }
 
@@ -251,18 +275,22 @@ pipeline {
                     if (shouldRunUnitTests()) {
                         dir(env.BUILD_DIR) {
                             if (env.ENABLE_CODE_COVERAGE) {
-                                // Reset code coverage counters (note optional hence the || true).
-                                sh 'make ${GERRIT_PROJECT}-coverage-zero-counters || true'
+                                // Reset code coverage counters
+                                sh 'cmake --build .. --target ${GERRIT_PROJECT}-coverage-zero-counters'
                             }
-
                             // -j${TEST_PARALLELISM} : Run tests in parallel.
                             // -T Test   : Generate XML output file of test results.
-                            sh 'ctest -j${TEST_PARALLELISM} --output-on-failure \
-                                --no-compress-output -T Test ${CTEST_ARGS}'
-
-                            // Generate code coverage report in XML format for Jenkins plugin.
+                            def ctestResult = sh(returnStatus: true, script: '''
+                                ctest -j${TEST_PARALLELISM} --output-on-failure \
+                                        --no-compress-output -T Test ${CTEST_ARGS}
+                            ''')
+                            if (ctestResult != 0) {
+                                // Coverage can be generated even if tests fail,
+                                // so we need to mark the build as unstable.
+                                currentBuild.result = env.ENABLE_CODE_COVERAGE ? 'UNSTABLE' : 'FAILURE'
+                            }
                             if (env.ENABLE_CODE_COVERAGE) {
-                                sh 'make ${GERRIT_PROJECT}-coverage-report-xml || true'
+                                sh 'cmake --build .. --target ${GERRIT_PROJECT}-coverage-report-xml'
                             }
                         }
                     } else {
@@ -277,6 +305,15 @@ pipeline {
                         sh 'make -C testrunner simple-test VERBOSE=1'
                     }
                 }
+            }
+        }
+        stage("Publish Coverage"){
+            when {
+                expression { env.ENABLE_CODE_COVERAGE }
+            }
+            steps {
+                discoverReferenceBuild()
+                recordCoverage(tools: [[parser: 'COBERTURA', pattern: '**/coverage.xml']])
             }
         }
         stage("Static Analysis"){
