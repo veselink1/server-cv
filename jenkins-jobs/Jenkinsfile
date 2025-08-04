@@ -403,9 +403,15 @@ pipeline {
                     // fail the build if core files were found
                     currentBuild.result = 'FAILURE'
                 }
+
+                // Patterns to archive.
+                def artifactsToArchive = ['archived_core_dumps.tar.bz2', '**/sanitizers.log.*']
+                if (env.ADDITIONAL_ARTIFACTS) {
+                    artifactsToArchive.add(env.ADDITIONAL_ARTIFACTS)
+                }
+                archiveArtifacts(allowEmptyArchive: true,
+                                artifacts: artifactsToArchive.join(','))
             }
-            archiveArtifacts(allowEmptyArchive: true,
-                             artifacts: 'archived_core_dumps.tar.bz2,**/sanitizers.log.*')
             reportWarnings()
             cleanWs cleanWhenFailure: false,
                     cleanWhenNotBuilt: false,
