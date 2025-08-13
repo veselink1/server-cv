@@ -28,9 +28,6 @@ MACOS_NODE_LABEL = "kv-macos"
 
 pipeline {
     options {
-        buildDiscarder(logRotator(daysToKeepStr: '30', numToKeepStr: '',
-                                  artifactDaysToKeepStr: '2',
-                                  artifactNumToKeepStr: ''))
         timestamps()
     }
     agent { label getNodeLabel() }
@@ -40,7 +37,6 @@ pipeline {
                 script {
                     // look for config files which specify env vars
                     loadEnvFiles()
-
                     // Configure triggers based on loaded environment variables
                     def triggers = []
 
@@ -69,7 +65,11 @@ pipeline {
                                               wipStateChanged()]))
                     }
 
-                    properties([pipelineTriggers(triggers)])
+                    // Configure build retention policy and triggers
+                    properties([
+                        pipelineTriggers(triggers),
+                        buildDiscarder(getLogRotatorConfig())
+                    ])
                 }
 
                 script {
@@ -583,4 +583,21 @@ def addToEnv(closure) {
     closure.resolveStrategy = Closure.DELEGATE_FIRST
     closure.delegate = env
     closure()
+}
+
+/**
+ * Get logRotator configuration from environment variables set by config files
+ */
+def getLogRotatorConfig() {
+    def daysToKeep = env.LOG_RETENTION_DAYS ?: '30'
+    def numToKeep = env.LOG_RETENTION_COUNT ?: ''
+    def artifactDaysToKeep = env.ARTIFACT_RETENTION_DAYS ?: '2'
+    def artifactNumToKeep = env.ARTIFACT_RETENTION_COUNT ?: ''
+
+    return logRotator(
+        daysToKeepStr: daysToKeep,
+        numToKeepStr: numToKeep,
+        artifactDaysToKeepStr: artifactDaysToKeep,
+        artifactNumToKeepStr: artifactNumToKeep
+    )
 }

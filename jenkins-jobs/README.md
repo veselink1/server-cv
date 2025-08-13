@@ -96,6 +96,24 @@ This would override `CTEST_ARGS` (if it were set in a `common` config) and
 append to the end of `PATH` (not overriding what was set in the `common`
 config).
 
+##### Build Retention Configuration
+
+The pipeline supports configurable build and artifact retention policies through
+environment variables. These can be set in any config file to customize how
+long builds and artifacts are kept:
+
+```
+return {
+    // Build log retention
+    LOG_RETENTION_DAYS = "30"           // Days to keep build logs (default: 30)
+    LOG_RETENTION_COUNT = "50"          // Number of builds to keep (default: unlimited)
+
+    // Artifact retention
+    ARTIFACT_RETENTION_DAYS = "7"       // Days to keep artifacts (default: 2)
+    ARTIFACT_RETENTION_COUNT = "10"     // Number of builds with artifacts (default: unlimited)
+}
+```
+
 #### Job Names
 
 Currently, the pipeline determines which config file to load based on the job

@@ -16,4 +16,6 @@ return {
     CTEST_ARGS="--tests-regex ^fuzztest\\."
     CB_FUZZTEST_LOG_FILE="yes"
     ADDITIONAL_ARTIFACTS="**/*_fuzztest_*.log"
+    LOG_RETENTION_DAYS="30"
+    ARTIFACT_RETENTION_DAYS="30"
 }
